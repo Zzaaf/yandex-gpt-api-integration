@@ -1,4 +1,7 @@
 import dotenv from 'dotenv';
+import express from 'express';
+import { corsMiddleware } from '../middlewares/cors.middleware.js';
+import { logMiddleware } from '../middlewares/log.middleware.js';
 
 dotenv.config();
 
@@ -31,20 +34,11 @@ export const config = {
     }
 };
 
-// Валидация обязательной конфигурации
-export const validateConfig = () => {
-    const required = {
-        'YANDEX_API_KEY': config.yandexGpt.apiKey,
-        'YANDEX_CATALOGUE_ID': config.yandexGpt.catalogueId
-    };
-
-    const missing = Object.entries(required)
-        .filter(([key, value]) => !value)
-        .map(([key]) => key);
-
-    if (missing.length > 0) {
-        throw new Error(`Отсутствуют обязательные переменные окружения: ${missing.join(', ')}`);
+export const serverConfig = (app) => {
+    if (config.app.corsEnabled) {
+        app.use(corsMiddleware);
     }
-
-    return true;
-};
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+    app.use(logMiddleware);
+}

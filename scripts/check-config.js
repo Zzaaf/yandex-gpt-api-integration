@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 import dotenv from 'dotenv';
-import axios from 'axios';
-import { config, validateConfig } from '../src/config/index.js';
-import { axiosInstance } from '../src/utils/axiosClient.js';
+import { validateConfig } from '../src/validators/config.validator.js';
+import { axiosInstance } from '../src/utils/axios.instance.js';
+import { config } from '../src/config/server.config.js';
 
 dotenv.config();
 

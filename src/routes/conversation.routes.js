@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import MessageManager from '../services/MessageManager.js';
-import { axiosInstance } from '../utils/axiosClient.js';
-import { config } from '../config/index.js';
+import { axiosInstance } from '../utils/axios.instance.js';
+import { config } from '../config/server.config.js';
 
 const router = Router();
 const conversation = new MessageManager();

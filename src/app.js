@@ -1,33 +1,13 @@
 import express from 'express';
 import conversationRoutes from './routes/conversation.routes.js';
-import { config } from './config/index.js';
+import { config, serverConfig } from './config/server.config.js';
+import { errorMiddleware } from './middlewares/error.middleware.js';
 
 // Создание Express приложения
 const app = express();
 
-// Middleware промежуточные обработчики
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Настройка CORS (если включено)
-if (config.app.corsEnabled) {
-    app.use((req, res, next) => {
-        res.header('Access-Control-Allow-Origin', '*');
-        res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-        if (req.method === 'OPTIONS') {
-            return res.sendStatus(200);
-        }
-        next();
-    });
-}
-
-// Middleware для логирования запросов
-app.use((req, res, next) => {
-    const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] ${req.method} ${req.path}`);
-    next();
-});
+// Настройка сервера
+serverConfig(app);
 
 // Эндпоинт проверки состояния
 app.get('/health', (req, res) => {
@@ -70,14 +50,6 @@ app.use((req, res) => {
 });
 
 // Middleware для обработки ошибок
-app.use((err, req, res, next) => {
-    console.error('Ошибка:', err);
-    res.status(err.status || 500).json({
-        error: err.message || 'Внутренняя ошибка сервера',
-        code: err.code || 'SERVER_ERROR',
-        timestamp: new Date().toISOString(),
-        ...(config.server.env === 'development' && { stack: err.stack })
-    });
-});
+app.use(errorMiddleware);
 
 export default app;
