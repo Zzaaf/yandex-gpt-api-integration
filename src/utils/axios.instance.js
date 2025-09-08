@@ -7,7 +7,6 @@ export const axiosInstance = axios.create({
         Authorization: `Api-Key ${config.yandexGpt.apiKey}`,
         "Content-Type": "application/json"
     },
-    timeout: 30000 // Таймаут 30 секунд
 });
 
 // Перехватчик запросов для логирования

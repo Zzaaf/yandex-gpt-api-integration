@@ -3,7 +3,6 @@
 import dotenv from 'dotenv';
 import { validateConfig } from '../src/validators/config.validator.js';
 import { axiosInstance } from '../src/utils/axios.instance.js';
-import { config } from '../src/config/server.config.js';
 
 dotenv.config();
 
@@ -58,7 +57,7 @@ if (!hasErrors && process.env.YANDEX_API_KEY && process.env.YANDEX_CATALOGUE_ID)
     console.log('-'.repeat(50));
 
     const testRequest = {
-        modelUri: `gpt://${process.env.YANDEX_CATALOGUE_ID}/yandexgpt-lite`,
+        modelUri: `gpt://${process.env.YANDEX_CATALOGUE_ID}/yandexgpt`,
         completionOptions: {
             stream: false,
             temperature: 0.1,
@@ -71,23 +70,38 @@ if (!hasErrors && process.env.YANDEX_API_KEY && process.env.YANDEX_CATALOGUE_ID)
     };
 
     try {
+        console.log('📤 Отправка тестового запроса...');
+        console.log(`   Model URI: ${testRequest.modelUri}`);
+        console.log(`   API URL: ${process.env.YANDEX_MODEL_URL}`);
+
         const response = await axiosInstance.post("", testRequest);
 
         if (response.data && response.data.result) {
             console.log('✅ Подключение к API: Успешно');
             console.log('✅ Ответ получен от YandexGPT');
             console.log(`   Версия модели: ${response.data.result.modelVersion || 'неизвестно'}`);
+            console.log(`   Ответ: ${response.data.result.alternatives[0]?.message?.text || 'Нет текста'}`);
         }
     } catch (error) {
         console.log('❌ Подключение к API: Не удалось');
         if (error.response) {
             console.log(`   Статус: ${error.response.status}`);
-            console.log(`   Ошибка: ${JSON.stringify(error.response.data)}`);
+            console.log(`   Ошибка: ${JSON.stringify(error.response.data, null, 2)}`);
 
             if (error.response.status === 401) {
                 console.log('\n   💡 Подсказка: Проверьте, правильный ли ваш API ключ и активен ли он');
+                console.log('   - Убедитесь, что API ключ скопирован полностью без пробелов');
+                console.log('   - Проверьте, что ключ не истек');
             } else if (error.response.status === 403) {
-                console.log('\n   💡 Подсказка: Проверьте, есть ли у вашего сервисного аккаунта необходимые разрешения');
+                console.log('\n   💡 Подсказка: Проверьте права доступа:');
+                console.log('   - Убедитесь, что у сервисного аккаунта есть роль "ai.languageModels.user"');
+                console.log('   - Проверьте, что каталог ID правильный');
+                console.log('   - Убедитесь, что API ключ привязан к правильному сервисному аккаунту');
+                console.log('   - Проверьте, что в каталоге включен сервис YandexGPT');
+            } else if (error.response.status === 400) {
+                console.log('\n   💡 Подсказка: Проверьте формат запроса:');
+                console.log('   - Убедитесь, что modelUri имеет правильный формат');
+                console.log('   - Проверьте параметры completionOptions');
             }
         } else {
             console.log(`   Ошибка: ${error.message}`);
